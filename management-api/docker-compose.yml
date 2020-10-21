@@ -1,0 +1,9 @@
+version: "3.7"
+services:
+  apisprout:
+    image: danielgtaylor/apisprout:latest
+    command: /management.yml
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./management.yml:/management.yml"

@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "batchNotification",
+  "description": "An notification about a batch status change\n(C) Copyright IBM Corp. 2020\nSPDX-License-Identifier: Apache-2.0",
+  "$comment": "(C) Copyright IBM Corp. 2020; SPDX-License-Identifier: Apache-2.0",
+  "examples": [
+    {
+      "id" : "1234",
+      "name": "batch-2019-10-07",
+      "topic" : "ingest.1.fhir",
+      "dataType" : "claims",
+      "status" : "started",
+      "startDate" : "2019-10-30T12:34:00Z",
+      "metadata" : { "compression": "gzip" }
+    },
+    {
+      "id" : "1234",
+      "name": "batch-2019-10-07",
+      "topic" : "ingest.1.fhir",
+      "dataType" : "claims",
+      "status" : "completed",
+      "recordCount" : 100,
+      "startDate" : "2019-10-30T12:34:00Z",
+      "endDate" : "2019-10-30T16:02:00Z"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The unique identifier for a batch",
+      "type": "string"
+    },
+    "name": {
+      "description": "Name of the batch",
+      "type": "string"
+    },
+    "topic": {
+      "description": "Name of the topic",
+      "type": "string"
+    },
+    "dataType": {
+      "description": "The type of data",
+      "type": "string"
+    },
+    "status": {
+      "description": "The new batch status",
+      "type": "string",
+      "enum": ["started", "completed", "terminated", "failed"]
+    },
+    "recordCount": {
+      "description": "The number of records in this batch",
+      "type": "integer",
+      "minimum": 0
+    },
+    "startDate": {
+      "description": "The datetime the batch started, ISO 8601",
+      "type": "string",
+      "format": "date-time",
+      "customDateTimePattern": "yyyy-MM-dd'T'HH:mm:ssXXX"
+    },
+    "endDate": {
+      "description": "The datetime the batch completed, ISO 8601",
+      "type": "string",
+      "format": "date-time",
+      "customDateTimePattern": "yyyy-MM-dd'T'HH:mm:ssXXX"
+    },
+    "metadata": {
+      "description": "Custom batch metadata in JSON format",
+      "type": "object"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "topic",
+    "dataType",
+    "status",
+    "startDate"
+  ]
+}

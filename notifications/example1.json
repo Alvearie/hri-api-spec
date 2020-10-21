@@ -1,0 +1,9 @@
+{
+  "id" : "1234",
+  "name": "batch-2019-10-07",
+  "topic" : "ingest.1.fhir",
+  "dataType" : "claims",
+  "status" : "started",
+  "startDate" : "2019-10-30T12:34:00Z",
+  "metadata" : { "compression": "gzip" }
+}
