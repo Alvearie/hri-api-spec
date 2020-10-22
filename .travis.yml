@@ -1,0 +1,25 @@
+services:
+  - docker
+language: go
+go: 1.13.x
+
+stages:
+  - name: Test
+  - name: Publish
+    if: type != pull_request
+
+jobs:
+  include:
+    - stage: Test
+      script:
+        - go test -v github.com/Alvearie/hri-api-spec/notifications
+        - docker run -v $(pwd)/management-api/management.yml:/management.yml p1c2u/openapi-spec-validator /management.yml
+    - stage: Publish
+      script:
+        - "./gradlew publish -Pibm_artifactory_user=$ibm_artifactory_user -Pibm_artifactory_password=$ibm_artifactory_password"
+
+env:
+  global:
+    - ibm_artifactory_user=
+    # ibm_artifactory_password
+    - secure:

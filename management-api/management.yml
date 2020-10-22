@@ -1,0 +1,863 @@
+openapi: 3.0.1
+info:
+  title: Health Record Ingestion Management API
+  version: 0.3.0
+  description: IBM Watson Health, Health Record Ingestion Management API
+  license:
+    name: Apache 2.0
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+paths:
+  '/tenants/{tenantId}/batches':
+    post:
+      summary: Create Batch
+      description: >-
+        Data Producer sends a New Batch Registration call into the API. HRI
+        records batch metadata/properties and begins tracking state.
+      operationId: createBatch
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+      requestBody:
+        description: Batch Metadata
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Batch'
+      responses:
+        '201':
+          description: Successful Batch creation
+          content:
+             application/json:
+              schema:
+                type: object
+                required: 
+                  - id
+                properties:
+                  id:
+                    type: string
+                    description: New Batch ID
+                example:
+                  id: batch12345
+        '400':
+          description: Invalid request (JSON)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '404':
+          description: Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - batch
+    get:
+      summary: Get Batches for Tenant
+      operationId: getBatches
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+        - name: name
+          description: limits results to entries with this name
+          in: query
+          required: false
+          schema:
+            type: string
+          example: claims-2020-01-01
+        - name: status
+          description: limits results to entries with this status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/status'
+        - name: gteDate
+          description: limits results to entries with a start date greater than or equal to this
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: '2020-01-01T12:00:00.000Z'
+        - name: lteDate
+          description: limits results to entries with a start date less than or equal to this
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: '2120-01-02T12:00:00.000Z'
+        - name: size
+          description: the number of entries to return
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: from
+          description: the number of entries to skip; provided for pagination of results. Note that from + size can not be more than 10000.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batches'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '404':
+          description: Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - batch
+  '/tenants/{tenantId}/batches/{batchId}':
+    get:
+      summary: Retrieve Metadata for Batch
+      operationId: getBatchById
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: batch12345
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Batch"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '404':
+          description: Batch or Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - batch
+  '/tenants/{tenantId}/batches/{batchId}/action/terminate':
+    put:
+      summary: Terminate Batch
+      description: >-
+        For an existing batch that is in state "Started", update state to 
+        "Terminated".
+      operationId: setBatchStateTerminated
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: batch12345
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '404':
+          description: Batch or Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '409':
+          description: 'Conflict: Batch Processing is not in correct State to be terminated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - batch
+        - status
+  '/tenants/{tenantId}/batches/{batchId}/action/sendComplete':
+    put:
+      summary: Update Batch status to Send Complete
+      description: >-
+        For an existing batch that is in state "Started", indicate all the data 
+        has been sent. The state will change to "Completed".
+      operationId: setBatchStateSendComplete
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: batch12345
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - recordCount
+              properties:
+                recordCount:
+                  $ref: '#/components/schemas/recordCount'
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '404':
+          description: Batch or Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '409':
+          description: 'Conflict: Batch Processing is not in correct State to be updated to Completed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - batch
+        - status
+  '/healthcheck':
+    get: 
+      summary: Perform a health check query of system availability
+      description: >-
+        HRI Management API operation to return a health check response that tells the caller the system is currently available or NOT available.
+      responses:
+        '200':
+          description: Success     
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '503':
+          description: HRI Service Temporarily Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  '/tenants':
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get a list of all tenantIds
+      operationId: getTenants
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenants'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Unauthorized'
+                  - $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - tenant
+  '/tenants/{tenantId}':
+    post:
+      security:
+        - bearerAuth: []
+      summary: Create new tenant
+      operationId: createTenant
+      parameters:
+        - name: tenantId
+          description: The TenantId may contain lowercase alpha-numeric characters, -, and _.
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '400':
+          description: Invalid request (JSON)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Unauthorized'
+                  - $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - tenant
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get information on a specific elastic index
+      operationId: getTenantById
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantInfo'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+               schema:
+                 oneOf:
+                   - $ref: '#/components/schemas/Unauthorized'
+                   - $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - tenant
+    delete:
+      security:
+        - bearerAuth: []
+      summary: Delete a specific tenant
+      operationId: deleteTenantById
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Unauthorized'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - tenant
+  '/tenants/{tenantId}/streams':
+    get:
+      security:
+        - bearerAuth: []
+      summary: Get all Streams for Tenant
+      operationId: getStreams
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Streams'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Unauthorized'
+                  - $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - stream
+  '/tenants/{tenantId}/streams/{streamId}':
+    post:
+      security:
+        - bearerAuth: []
+      summary: Create new Stream for a Tenant
+      operationId: createStream
+      parameters:
+        - name: tenantId
+          description: The TenantId may contain lowercase alpha-numeric characters, -, and _.
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+        - name: streamId
+          description: >-
+            The id of the stream includes both the data integrator id and an 
+            optional qualifier, delimited by '.'. It may contain lowercase 
+            alpha-numeric characters, -, _, and no more than one '.'.
+          in: path
+          required: true
+          schema:
+            type: string
+          example: dataint.qualifier
+      requestBody:
+        description: Stream Configs
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamConfig'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stream'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Unauthorized'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - stream
+    delete:
+      security:
+        - bearerAuth: []
+      summary: Delete a Stream for a Tenant
+      operationId: deleteStream
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+        - name: streamId
+          in: path
+          required: true
+          description: id of the stream, includes both the data integrator id and an optional qualifier, delimited by '.'
+          schema:
+            type: string
+          example: dataint.qualifier
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Unauthorized'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: Stream not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - stream
+
+components:
+  schemas:
+
+    recordCount:
+      type: integer
+      minimum: 1
+      format: int64
+      example: 200
+
+    status:
+      type: string
+      enum:
+        - started
+        - completed
+        - failed
+        - terminated
+
+    Batch:
+      type: object
+      required:
+        - id
+        - name
+        - topic
+        - dataType
+        - status
+        - startDate
+      properties:
+        id:
+          type: string
+          readOnly: true
+          example: batch12345
+        name:
+          type: string
+          example: claims-2020-01-01
+        topic:
+          type: string
+          example: ingest.provider1234.claims.in
+        dataType:
+          type: string
+          example: claims
+        status:
+          allOf:
+            - readOnly: true
+            - $ref: '#/components/schemas/status'
+        startDate:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2020-01-01T12:00:00.000Z'
+        endDate:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2020-01-01T12:02:34.567Z'
+        recordCount:
+          allOf:
+            - readOnly: true
+            - $ref: '#/components/schemas/recordCount'
+        metadata:
+          type: object
+          example: { "compression": "gzip" }
+
+    Batches:
+      type: object
+      required: 
+        - total
+        - results
+      properties:
+        total:
+          description: the total number of entries matching the search request; provided for pagination of results.  May be greater than the number of entries in the results array.
+          type: integer
+          example: 10
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Batch'
+    Tenant:
+      type: object
+      required:
+        - tenantId
+      properties:
+        tenantId:
+          type: string
+          readOnly: true
+          example: provider1234
+    TenantInfo:
+      type: object
+      required:
+        - health
+        - status
+        - index
+        - uuid
+        - pri
+        - rep
+        - docs.count
+        - docs.deleted
+        - store.size
+        - pri.store.size
+      properties:
+        health:
+          type: string
+          readOnly: true
+          example: green
+        status:
+          type: string
+          example: open
+        index:
+          type: string
+          example: provider1234-batches
+        uuid:
+          type: string
+          example: jbdsbjdasojjoefq
+        pri:
+          type: string
+          example: 1
+        rep:
+          type: string
+          example: 1
+        docs.count:
+          type: string
+          example: 234
+        docs.deleted:
+          type: string
+          example: 2
+        store.size:
+          type: string
+          example: 108.8kb
+        pri.store.size:
+          type: string
+          example: 54.4kb
+
+
+    Tenants:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tenant'
+
+    StreamConfig:
+      type: object
+      required:
+        - numPartitions
+        - retentionMs
+      properties:
+        numPartitions:
+          type: integer
+          description: Number of partitions on the topic
+          example: 1
+        retentionMs:
+          type: integer
+          description: How long to retain messages for in ms
+          example: 86400000
+        retentionBytes:
+          type: integer
+          description: Optional maximum size in bytes that a partition can grow before discarding messages
+          example: 1073741824
+        cleanupPolicy:
+          type: string
+          description: Optional retention policy on old log segments. Valid options are delete or compact
+          example: delete
+        segmentBytes:
+          type: integer
+          description: Optional log segment file size in bytes
+          example: 536870912
+        segmentMs:
+          type: integer
+          description: Optional time in ms after which Kafka will force the log to roll even if the segment file isn't full
+          example: 300000
+        segmentIndexBytes:
+          type: integer
+          description: Optional size in bytes of the index that maps offsets to file positions
+          example: 10485760
+
+    Stream:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: stream name includes both the data integrator id and an optional qualifier, delimited by '.'
+          example: dataint.qualifier
+
+    Streams:
+      type: object
+      required:
+        - results
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stream'
+
+    ErrorDetail:
+      type: object
+      required:
+        - errorEventId
+      properties:
+        errorEventId:
+          type: string
+          example: adf01715c1d24292b01715c1d2429218
+        errorDescrption:
+          type: string
+          example: an error message
+
+    GatewayError:
+      type: object
+      required:
+        - code
+        - error
+      properties:
+        code:
+          type: string
+          example: adf01715c1d24292b01715c1d2429218
+        error:
+          type: string
+          example: an error message
+
+    Unauthorized:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: integer
+          example: 401
+        message:
+          type: string
+          example: "Error: Unauthorized"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
