@@ -1,5 +1,5 @@
 # Health Record Ingestion Service API Specification
-The IBM Watson Health, Health Record Ingestion service is an open source project designed to serve as a “front door”, receiving health data for cloud-based solutions. See our [documentation](https://alvearie.github.io/hri/) for more details.
+The IBM Watson Health, Health Record Ingestion service is an open source project designed to serve as a “front door”, receiving health data for cloud-based solutions. See our [documentation](https://alvearie.github.io/HRI/) for more details.
 
 This repo contains the API definition for the HRI service, which consists of two parts, the management API, and Event Streams (IBM Cloud managed Kafka service). Kafka already has a defined [API](https://kafka.apache.org/documentation/), so this repo only documents the format of the Notification messages. The format of the health care data written to Kafka is not restricted by the HRI.
 
