@@ -7,6 +7,7 @@
     {
       "id" : "1234",
       "name": "batch-2019-10-07",
+      "integratorId": "c857cb05-b7f3-123b-bab9-bfc8151f5522",
       "topic" : "ingest.1.fhir",
       "dataType" : "claims",
       "status" : "started",
@@ -16,6 +17,7 @@
     {
       "id" : "1234",
       "name": "batch-2019-10-07",
+      "integratorId": "c857cb05-b7f3-123b-bab9-bfc8151f5522",
       "topic" : "ingest.1.fhir",
       "dataType" : "claims",
       "status" : "completed",
@@ -32,6 +34,10 @@
     },
     "name": {
       "description": "Name of the batch",
+      "type": "string"
+    },
+    "integratorId": {
+      "description": "The unique identifier of the Data Integrator that created this batch",
       "type": "string"
     },
     "topic": {
@@ -72,6 +78,7 @@
   "required": [
     "id",
     "name",
+    "integratorId",
     "topic",
     "dataType",
     "status",

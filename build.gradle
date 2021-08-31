@@ -6,8 +6,9 @@ plugins {
 }
 
 group = 'org.alvearie.hri'
-version = '0.3.0'
+version = '1.2.0'
 
+//TODO update for GitHub actions
 ext.branch = System.getenv('TRAVIS_BRANCH') != null
         ? System.getenv('TRAVIS_BRANCH')
         : grgit.open(currentDir: project.rootDir).branch.current.name
@@ -188,10 +189,10 @@ publishing {
 
     repositories {
         maven {
-            url ''
+            url 'TBD'
             credentials {
-                username findProperty('ibm_artifactory_user') ?: ''
-                password findProperty('ibm_artifactory_password') ?: ''
+                username findProperty('user') ?: ''
+                password findProperty('password') ?: ''
             }
         }
     }

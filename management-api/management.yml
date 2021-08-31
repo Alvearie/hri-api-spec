@@ -1,8 +1,8 @@
 openapi: 3.0.1
 info:
   title: Health Record Ingestion Management API
-  version: 0.3.0
-  description: IBM Watson Health, Health Record Ingestion Management API
+  version: 1.2.0
+  description: Alvearie Health Record Ingestion Management API
   license:
     name: Apache 2.0
     url: "https://www.apache.org/licenses/LICENSE-2.0.html"
@@ -14,6 +14,8 @@ paths:
         Data Producer sends a New Batch Registration call into the API. HRI
         records batch metadata/properties and begins tracking state.
       operationId: createBatch
+      security:
+        - hri_auth: [tenant_tenantId, hri_data_integrator]
       parameters:
         - name: tenantId
           in: path
@@ -35,7 +37,7 @@ paths:
              application/json:
               schema:
                 type: object
-                required: 
+                required:
                   - id
                 properties:
                   id:
@@ -56,7 +58,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
+                $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Tenant not found
           content:
@@ -68,6 +70,9 @@ paths:
     get:
       summary: Get Batches for Tenant
       operationId: getBatches
+      security:
+        - hri_auth: [tenant_tenantId, hri_data_integrator]
+        - hri_auth: [tenant_tenantId, hri_consumer]
       parameters:
         - name: tenantId
           in: path
@@ -138,7 +143,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
+                $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Tenant not found
           content:
@@ -151,6 +156,9 @@ paths:
     get:
       summary: Retrieve Metadata for Batch
       operationId: getBatchById
+      security:
+        - hri_auth: [tenant_tenantId, hri_data_integrator]
+        - hri_auth: [tenant_tenantId, hri_consumer]
       parameters:
         - name: tenantId
           in: path
@@ -182,7 +190,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
+                $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Batch or Tenant not found
           content:
@@ -198,6 +206,8 @@ paths:
         For an existing batch that is in state "Started", update state to 
         "Terminated".
       operationId: setBatchStateTerminated
+      security:
+        - hri_auth: [tenant_tenantId, hri_data_integrator]
       parameters:
         - name: tenantId
           in: path
@@ -211,6 +221,15 @@ paths:
           schema:
             type: string
           example: batch12345
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                metadata:
+                  $ref: '#/components/schemas/metadata'
       responses:
         '200':
           description: Success
@@ -225,7 +244,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
+                $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Batch or Tenant not found
           content:
@@ -248,6 +267,8 @@ paths:
         For an existing batch that is in state "Started", indicate all the data 
         has been sent. The state will change to "Completed".
       operationId: setBatchStateSendComplete
+      security:
+        - hri_auth: [tenant_tenantId, hri_data_integrator]
       parameters:
         - name: tenantId
           in: path
@@ -272,6 +293,8 @@ paths:
               properties:
                 recordCount:
                   $ref: '#/components/schemas/recordCount'
+                metadata:
+                  $ref: '#/components/schemas/metadata'
       responses:
         '200':
           description: Success
@@ -288,7 +311,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
+                $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Batch or Tenant not found
           content:
@@ -305,19 +328,19 @@ paths:
         - batch
         - status
   '/healthcheck':
-    get: 
+    get:
       summary: Perform a health check query of system availability
       description: >-
         HRI Management API operation to return a health check response that tells the caller the system is currently available or NOT available.
       responses:
         '200':
-          description: Success     
-        '401':
-          description: Unauthorized request
+          description: Success
+        '400':
+          description: Invalid request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
+                $ref: '#/components/schemas/GatewayError'
         '503':
           description: HRI Service Temporarily Unavailable
           content:
@@ -351,7 +374,6 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Unauthorized'
                   - $ref: '#/components/schemas/ErrorDetail'
       tags:
         - tenant
@@ -390,7 +412,6 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Unauthorized'
                   - $ref: '#/components/schemas/ErrorDetail'
       tags:
         - tenant
@@ -427,7 +448,6 @@ paths:
             application/json:
                schema:
                  oneOf:
-                   - $ref: '#/components/schemas/Unauthorized'
                    - $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Tenant not found
@@ -466,7 +486,6 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Unauthorized'
                   - $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Tenant not found
@@ -510,7 +529,6 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Unauthorized'
                   - $ref: '#/components/schemas/ErrorDetail'
       tags:
         - stream
@@ -530,8 +548,8 @@ paths:
           example: provider1234
         - name: streamId
           description: >-
-            The id of the stream includes both the data integrator id and an 
-            optional qualifier, delimited by '.'. It may contain lowercase 
+            The id of the stream includes both the data integrator id and an
+            optional qualifier, delimited by '.'. It may contain lowercase
             alpha-numeric characters, -, _, and no more than one '.'.
           in: path
           required: true
@@ -566,7 +584,6 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Unauthorized'
                   - $ref: '#/components/schemas/ErrorDetail'
         '409':
           description: Conflict
@@ -612,7 +629,6 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Unauthorized'
                   - $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Stream not found
@@ -640,11 +656,17 @@ components:
         - failed
         - terminated
 
+    metadata:
+      type: object
+      additionalProperties: true # this makes metadata a "Free-Form Object"
+      example: { "compression": "gzip", "finalRecordCount": 20 }
+
     Batch:
       type: object
       required:
         - id
         - name
+        - integratorId
         - topic
         - dataType
         - status
@@ -657,6 +679,10 @@ components:
         name:
           type: string
           example: claims-2020-01-01
+        integratorId:
+          type: string
+          readOnly: true
+          example: c857cb05-b7f3-123b-bab9-bfc8151f5522
         topic:
           type: string
           example: ingest.provider1234.claims.in
@@ -682,8 +708,7 @@ components:
             - readOnly: true
             - $ref: '#/components/schemas/recordCount'
         metadata:
-          type: object
-          example: { "compression": "gzip" }
+          $ref: '#/components/schemas/metadata'
 
     Batches:
       type: object
@@ -826,7 +851,7 @@ components:
         errorEventId:
           type: string
           example: adf01715c1d24292b01715c1d2429218
-        errorDescrption:
+        errorDescription:
           type: string
           example: an error message
 
@@ -843,20 +868,12 @@ components:
           type: string
           example: an error message
 
-    Unauthorized:
-      type: object
-      required:
-        - status
-        - message
-      properties:
-        status:
-          type: integer
-          example: 401
-        message:
-          type: string
-          example: "Error: Unauthorized"
-
+# this section must always be last, because it's incompatible with the Dredd tests and is dynamically removed during testing
   securitySchemes:
+    hri_auth:
+      type: openIdConnect
+      openIdConnectUrl: https://your.oidc.com/.well-known/openid-configuration
+      description: The OIDC server used for all batch endpoints, which is configured on deployment of the API.
     bearerAuth:
       type: http
       scheme: bearer
