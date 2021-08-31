@@ -6,7 +6,8 @@ plugins {
 }
 
 group = 'org.alvearie.hri'
-version = '2.1-2.0.1'
+version = '3.0-2.0.1'
+
 
 //TODO update for GitHub actions
 ext.branch = System.getenv('TRAVIS_BRANCH') != null
