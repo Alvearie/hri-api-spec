@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Health Record Ingestion Management API
-  version: 3.0-2.0.1
+  version: Alpha.Dev
   description: Alvearie Health Record Ingestion Management API
   license:
     name: Apache 2.0
@@ -50,9 +50,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
@@ -135,9 +133,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
@@ -184,7 +180,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GatewayError'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
@@ -239,7 +235,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GatewayError'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
@@ -310,9 +306,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
@@ -381,9 +375,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
@@ -454,9 +446,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
@@ -492,7 +482,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GatewayError'
+                $ref: '#/components/schemas/ErrorDetail'
         '503':
           description: HRI Service Temporarily Unavailable
           content:
@@ -517,16 +507,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
       tags:
         - tenant
   '/tenants/{tenantId}':
@@ -555,16 +542,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
       tags:
         - tenant
     get:
@@ -591,16 +575,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
             application/json:
                schema:
-                 oneOf:
-                   - $ref: '#/components/schemas/ErrorDetail'
+                 $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Tenant not found
           content:
@@ -629,16 +610,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Tenant not found
           content:
@@ -672,16 +650,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
       tags:
         - stream
   '/tenants/{tenantId}/streams/{streamId}':
@@ -727,16 +702,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '409':
           description: Conflict
           content:
@@ -772,16 +744,13 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GatewayError'
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '401':
           description: Unauthorized request
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ErrorDetail'
+                $ref: '#/components/schemas/ErrorDetail'
         '404':
           description: Stream not found
           content:
@@ -1053,19 +1022,6 @@ components:
           type: string
           example: adf01715c1d24292b01715c1d2429218
         errorDescription:
-          type: string
-          example: an error message
-
-    GatewayError:
-      type: object
-      required:
-        - code
-        - error
-      properties:
-        code:
-          type: string
-          example: adf01715c1d24292b01715c1d2429218
-        error:
           type: string
           example: an error message
 
