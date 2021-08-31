@@ -11,7 +11,7 @@ This repo contains the API definition for the HRI service, which consists of two
 The HRI Management API is defined using the OpenAPI 3.0 specification: [management-api/management.yml](management-api/management.yml).
 
 ### Viewing or Modifying the API
-The Swagger [viewer](https://swagger.io/tools/swagger-ui/) or [editor](https://editor.swagger.io/) is an easy way to view and/or modify the API. You can also run the editor locally in a docker image and it will be available at http://localhost:80.
+The Swagger [viewer](https://swagger.io/tools/swagger-ui/) or [editor](https://editor.swagger.io/) is an easy way to view and/or modify the API. You can also run the editor locally in a docker image, and it will be available at http://localhost:80.
 ```
 docker run -i --rm -p 80:8080 swaggerapi/swagger-editor
 ```
@@ -34,7 +34,7 @@ Data Integrators are only allowed to access Batches that they created. So if onl
 ### Running a Sandbox API
 You can use docker-compose to run a sandbox API that meets the specification and returns default values. Run `docker-compose up -d` from the `management-api` directory to start a sandbox API at `localhost:8000`. The sandbox endpoint is created using the [APISprout](https://github.com/danielgtaylor/apisprout) docker image.
 
-### CI/CD
+## CI/CD
 The GitHub actions build verifies the specification is valid and generates a Java library that defines a BatchNotification POJO. This library is available in **TBD** as a convenience for consumers of HRI Kafka notification messages. Since this is just the specification, there are no other tests or deployments. See [Alvearie/hri-mgmt-api](https://github.com/Alvearie/hri-mgmt-api) for implementation details of the API.
 
 ## Releases
@@ -44,7 +44,7 @@ Releases are created by creating Git tags, which trigger a build that publishes 
 Notifications are messages written to the notification topic to notify clients of the HRI about any state changes. Notification messages are encoded in json and each type has a defined json schema. Currently, there is only one kind of notification message, batch notifications. 
 
 ### Batch Notifications
-Batch notifications indicate a status change for a batch.  For example, when a new batch is started or completed.  The json schema is definded here: [batchNotification.json](notifications/batchNotification.json). For convenience, a Java library is available in **TBD**, which defines a BatchNotification POJO, and can be used when parsing notification messages using a JSON parsing library such as [Jackson]() or [Gson](). The generated POJO contains Jackson2 annotations, but is compatible with both Jackson and Gson readers. The generated POJO represents the notification message's date-time fields as Java8 OffsetDateTime fields so some care must be taken when configuring either the Jackson or Gson readers. See the examples below. Also note that schema evolution is not supported by default when using Jackson readers, unless the **FAIL_ON_UNKNOWN_PROPERTIES** feature is disabled, as shown below.
+Batch notifications indicate a status change for a batch. For example, when a new batch is started or completed. The json schema is defined here: [batchNotification.json](notifications/batchNotification.json). For convenience, a Java library is available in **TBD**, which defines a BatchNotification POJO, and can be used when parsing notification messages using a JSON parsing library such as [Jackson]() or [Gson](). The generated POJO contains Jackson2 annotations, but is compatible with both Jackson and Gson readers. The generated POJO represents the notification message's date-time fields as Java8 OffsetDateTime fields, so some care must be taken when configuring either the Jackson or Gson readers. See the examples below. Also, note that schema evolution is not supported by default when using Jackson readers, unless the **FAIL_ON_UNKNOWN_PROPERTIES** feature is disabled, as shown below.
 
 Jackson Reader:  
 Requires additional dependency: *com.fasterxml.jackson.datatype:jackson-datatype-jsr310*
@@ -61,19 +61,8 @@ Requires additional dependency: *com.fatboyindustrial.gson-javatime-serialisers:
 Gson gson = Converters.registerOffsetDateTime(new GsonBuilder()).create();
 ```
 
-#### Schema Validation
-There is a simple Golang program in the `notifications` directory that will validate an example notification message against the schema.  It was build with Go version 1.13 and uses Go Modules for dependency management.
-
-##### Build
-In the notification folder run:
-```go build validate.go```
-
-##### Run 
-Then execute in the notification folder.  It expects the `batchNotification.json` schema to be in the current working directory.  
-```
-$ ./validate example1.json
-The document is valid
-```
+### Invalid Records
+When validation is enabled, the Flink validation processing will output 'invalid' records to a `*.invalid` topic. These records contain a reference to the original record (topic, partition, offset) and a failure message. It does not contain the original record. The json schema is defined here: [invalidRecord.json](notifications/invalidRecord.json).
 
 ## Contribution Guide
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "invalidRecord",
+  "description": "This will include error information and a 'link' back to the original message consisting of the topic, partition, and offset\n(C) Copyright IBM Corp. 2020\nSPDX-License-Identifier: Apache-2.0",
+  "$comment": "(C) Copyright IBM Corp. 2020; SPDX-License-Identifier: Apache-2.0",
+  "examples": [
+    {
+      "batchId" : "7902",
+      "topic" : "ingest.1.fhir.in",
+      "partition" : 10,
+      "offset" : 134,
+      "failure" : "batch unknown"
+    },
+    {
+      "topic" : "ingest.1.fhir.in",
+      "partition" : 110,
+      "offset" : 2456,
+      "failure" : "invalid json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "batchId": {
+      "description": "Batch that this record belongs to",
+      "type": "string"
+    },
+    "topic": {
+      "description": "Name of the topic",
+      "type": "string"
+    },
+    "partition": {
+      "description": "The topic partition",
+      "type": "integer"
+    },
+    "offset": {
+      "description": "The offset of the record",
+      "type": "integer"
+    },
+    "failure": {
+      "description": "The description of why the record was invalid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "topic",
+    "partition",
+    "offset",
+    "failure"
+  ]
+}

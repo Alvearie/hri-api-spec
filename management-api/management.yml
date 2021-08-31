@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Health Record Ingestion Management API
-  version: 1.2.0
+  version: 2.1-2.0.1
   description: Alvearie Health Record Ingestion Management API
   license:
     name: Apache 2.0
@@ -201,10 +201,11 @@ paths:
         - batch
   '/tenants/{tenantId}/batches/{batchId}/action/terminate':
     put:
-      summary: Terminate Batch
+      summary: Terminate the Batch
       description: >-
-        For an existing batch that is in state "Started", update state to 
-        "Terminated".
+        For an existing batch that has a status of 'started', update the status 
+        to 'terminated'. If the status is not 'started', a 409 error will be 
+        returned.
       operationId: setBatchStateTerminated
       security:
         - hri_auth: [tenant_tenantId, hri_data_integrator]
@@ -262,10 +263,13 @@ paths:
         - status
   '/tenants/{tenantId}/batches/{batchId}/action/sendComplete':
     put:
-      summary: Update Batch status to Send Complete
+      summary: Indicate the Batch has been sent
       description: >-
-        For an existing batch that is in state "Started", indicate all the data 
-        has been sent. The state will change to "Completed".
+        For an existing batch that has a status of 'started', indicate all the 
+        data has been sent. If validation is enabled, the status will change to 
+        'sendCompleted'. If validation is not enabled, the status will change to
+        'completed'. If the status is not 'started', a 409 error will be returned.
+        409 error.
       operationId: setBatchStateSendComplete
       security:
         - hri_auth: [tenant_tenantId, hri_data_integrator]
@@ -284,13 +288,16 @@ paths:
           example: batch12345
       requestBody:
         required: true
+        description: Either expectedRecordCount or recordCount is required, but recordCount is deprecated.
         content:
           application/json:
             schema:
               type: object
               required:
-                - recordCount
+                - expectedRecordCount
               properties:
+                expectedRecordCount:
+                  $ref: '#/components/schemas/expectedRecordCount'
                 recordCount:
                   $ref: '#/components/schemas/recordCount'
                 metadata:
@@ -319,7 +326,151 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDetail'
         '409':
-          description: 'Conflict: Batch Processing is not in correct State to be updated to Completed'
+          description: 'Conflict: Batch is not in correct state to call Send Complete'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - batch
+        - status
+  '/tenants/{tenantId}/batches/{batchId}/action/processingComplete':
+    put:
+      summary: Indicate the Batch has been processed (Internal)
+      description: >-
+        This endpoint should only be used by internal HRI validation processes. 
+        For an existing batch has a status of 'sendCompleted', indicate all the
+        data has been processed and sent to the output topic. The state will 
+        change to 'completed'. If the status is not 'sendCompleted', a 409 error
+        will be returned.
+      operationId: setBatchStateProcessingComplete
+      security:
+        - hri_auth: [tenant_tenantId, hri_internal]
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: batch12345
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - actualRecordCount
+                - invalidRecordCount
+              properties:
+                actualRecordCount:
+                  $ref: '#/components/schemas/actualRecordCount'
+                invalidRecordCount:
+                  $ref: '#/components/schemas/invalidRecordCount'
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: Batch or Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '409':
+          description: 'Conflict: Batch is not in correct state to call Processing Complete'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+      tags:
+        - batch
+        - status
+  '/tenants/{tenantId}/batches/{batchId}/action/fail':
+    put:
+      summary: Fail the Batch (Internal)
+      description: >-
+        This endpoint should only be used by internal HRI validation processes. 
+        For an existing batch, indicate that it has failed. The state will 
+        change to 'failed'. This will return a 409 if the status is 'terminated'
+        or 'failed'.
+      operationId: setBatchStateFailed
+      security:
+        - hri_auth: [tenant_tenantId, hri_internal]
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: provider1234
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: batch12345
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - actualRecordCount
+                - invalidRecordCount
+                - failureMessage
+              properties:
+                actualRecordCount:
+                  $ref: '#/components/schemas/actualRecordCount'
+                invalidRecordCount:
+                  $ref: '#/components/schemas/invalidRecordCount'
+                failureMessage:
+                  type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GatewayError'
+                  - $ref: '#/components/schemas/ErrorDetail'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: Batch or Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '409':
+          description: 'Conflict: Batch Processing is not in correct State to be updated to Failed'
           content:
             application/json:
               schema:
@@ -331,7 +482,8 @@ paths:
     get:
       summary: Perform a health check query of system availability
       description: >-
-        HRI Management API operation to return a health check response that tells the caller the system is currently available or NOT available.
+        HRI Management API operation to return a health check response that 
+        tells the caller the system is currently available or NOT available.
       responses:
         '200':
           description: Success
@@ -642,19 +794,39 @@ paths:
 components:
   schemas:
 
+    status:
+      type: string
+      enum:
+        - started
+        - sendCompleted
+        - completed
+        - failed
+        - terminated
+
+    expectedRecordCount:
+      type: integer
+      minimum: 1
+      format: int64
+      example: 200
+      
     recordCount:
       type: integer
       minimum: 1
       format: int64
       example: 200
+      deprecated: true
 
-    status:
-      type: string
-      enum:
-        - started
-        - completed
-        - failed
-        - terminated
+    actualRecordCount:
+      type: integer
+      minimum: 0
+      format: int64
+      example: 200
+
+    invalidRecordCount:
+      type: integer
+      minimum: 0
+      format: int64
+      example: 4
 
     metadata:
       type: object
@@ -703,12 +875,34 @@ components:
           format: date-time
           readOnly: true
           example: '2020-01-01T12:02:34.567Z'
+        expectedRecordCount:
+          allOf:
+            - readOnly: true
+            - $ref: '#/components/schemas/expectedRecordCount'
         recordCount:
           allOf:
             - readOnly: true
             - $ref: '#/components/schemas/recordCount'
+        actualRecordCount:
+          allOf:
+            - readOnly: true
+            - $ref: '#/components/schemas/actualRecordCount'
+        invalidThreshold:
+          type: integer
+          default: -1
+          minimum: -1
+          format: int64
+          example: 10
+        invalidRecordCount:
+          allOf:
+            - readOnly: true
+            - $ref: '#/components/schemas/invalidRecordCount'
         metadata:
           $ref: '#/components/schemas/metadata'
+        failureMessage:
+          type: string
+          readOnly: true
+          example: "Reached invalidThreshold"
 
     Batches:
       type: object
@@ -717,7 +911,10 @@ components:
         - results
       properties:
         total:
-          description: the total number of entries matching the search request; provided for pagination of results.  May be greater than the number of entries in the results array.
+          description: >-
+            the total number of entries matching the search request; provided 
+            for pagination of results.  May be greater than the number of 
+            entries in the results array.
           type: integer
           example: 10
         results:

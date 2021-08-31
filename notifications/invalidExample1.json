@@ -1,0 +1,7 @@
+{
+  "batchId" : "7902",
+  "topic" : "ingest.1.fhir.in",
+  "partition" : 10,
+  "offset" : 134,
+  "failure" : "batch unknown"
+}

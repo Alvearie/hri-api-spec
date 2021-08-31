@@ -6,19 +6,24 @@ plugins {
 }
 
 group = 'org.alvearie.hri'
-version = '1.2.0'
+version = '2.1-2.0.1'
 
 //TODO update for GitHub actions
 ext.branch = System.getenv('TRAVIS_BRANCH') != null
         ? System.getenv('TRAVIS_BRANCH')
         : grgit.open(currentDir: project.rootDir).branch.current.name
-if ("${branch}" != 'master') {
-    version = "${version}-${branch}-SNAPSHOT"
+if (System.getenv('TRAVIS_TAG') == null || System.getenv('TRAVIS_TAG') == "") {
+    version = "${branch}-SNAPSHOT"
+} else if (System.getenv('TRAVIS_TAG') == "v${version}") {
+    version = "${version}"
+} else {
+    throw new InvalidUserDataException(String.format("The tag '%s' does not match with the current release version '%s'",System.getenv('TRAVIS_TAG'),"${version}"));
 }
+println "api-spec version: ${version}"
 
 repositories {
-  mavenLocal()
   mavenCentral()
+  mavenLocal()
 }
 
 dependencies {
@@ -41,7 +46,7 @@ jsonSchema2Pojo {
   usePrimitives = false
 
   // Location of the JSON Schema file(s). This may refer to a single file or a directory of files.
-  source = files("${project.projectDir}/notifications/batchNotification.json")
+  source = files("${project.projectDir}/notifications/batchNotification.json", "${project.projectDir}/notifications/invalidRecord.json")
 
   // Target directory for generated Java source files. The plugin will add this directory to the
   // java source set so the compiler will find and compile the newly generated source files.
@@ -184,6 +189,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            artifactId = 'hri-api-batch-notification'
         }
     }
 

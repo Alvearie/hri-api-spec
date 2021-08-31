@@ -8,8 +8,9 @@
       "id" : "1234",
       "name": "batch-2019-10-07",
       "integratorId": "c857cb05-b7f3-123b-bab9-bfc8151f5522",
-      "topic" : "ingest.1.fhir",
+      "topic" : "ingest.1.fhir.in",
       "dataType" : "claims",
+      "invalidThreshold" : 10,
       "status" : "started",
       "startDate" : "2019-10-30T12:34:00Z",
       "metadata" : { "compression": "gzip" }
@@ -18,10 +19,14 @@
       "id" : "1234",
       "name": "batch-2019-10-07",
       "integratorId": "c857cb05-b7f3-123b-bab9-bfc8151f5522",
-      "topic" : "ingest.1.fhir",
+      "topic" : "ingest.1.fhir.in",
       "dataType" : "claims",
       "status" : "completed",
       "recordCount" : 100,
+      "expectedRecordCount" : 100,
+      "actualRecordCount" : 100,
+      "invalidThreshold" : 10,
+      "invalidRecordCount" : 4,
       "startDate" : "2019-10-30T12:34:00Z",
       "endDate" : "2019-10-30T16:02:00Z"
     }
@@ -51,12 +56,7 @@
     "status": {
       "description": "The new batch status",
       "type": "string",
-      "enum": ["started", "completed", "terminated", "failed"]
-    },
-    "recordCount": {
-      "description": "The number of records in this batch",
-      "type": "integer",
-      "minimum": 0
+      "enum": ["started", "sendCompleted", "completed", "terminated", "failed"]
     },
     "startDate": {
       "description": "The datetime the batch started, ISO 8601",
@@ -70,9 +70,39 @@
       "format": "date-time",
       "customDateTimePattern": "yyyy-MM-dd'T'HH:mm:ssXXX"
     },
+    "recordCount": {
+      "description": "Deprecated - expectedRecordCount should be used instead",
+      "type": "integer",
+      "minimum": 1
+    },
+    "expectedRecordCount": {
+      "description": "The number of expected records in this batch",
+      "type": "integer",
+      "minimum": 1
+    },
+    "actualRecordCount": {
+      "description": "The number of actual records in this batch",
+      "type": "integer",
+      "minimum": 0
+    },
+    "invalidThreshold": {
+      "description": "The number of invalid records required to fail a batch (-1 is infinite)",
+      "type": "integer",
+      "minimum": -1,
+      "default": -1
+    },
+    "invalidRecordCount": {
+      "description": "The number of invalid records in this batch",
+      "type": "integer",
+      "minimum": 0
+    },
     "metadata": {
       "description": "Custom batch metadata in JSON format",
       "type": "object"
+    },
+    "failureMessage": {
+      "description": "A failure message. Only populated when the Batch status is 'failed'",
+      "type": "string"
     }
   },
   "required": [
@@ -82,6 +112,7 @@
     "topic",
     "dataType",
     "status",
-    "startDate"
+    "startDate",
+    "invalidThreshold"
   ]
 }

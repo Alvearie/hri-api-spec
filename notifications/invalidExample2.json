@@ -1,0 +1,6 @@
+{
+  "topic" : "ingest.1.fhir.in",
+  "partition" : 110,
+  "offset" : 2456,
+  "failure" : "invalid json"
+}
