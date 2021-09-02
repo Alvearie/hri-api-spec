@@ -22,4 +22,4 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Run a Start script line
-        run: echo 'Sup My Dawgs!             
+        run: echo Sup My Dawgs!
