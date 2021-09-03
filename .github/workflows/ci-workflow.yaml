@@ -23,5 +23,11 @@ jobs:
           distribution: 'adopt'
           cache: 'gradle'
       
+      - name: run openapi Validate
+        uses: mbowman100/swagger-validator-action@master
+        with:
+          files: |
+            management-api/management.yml
+      
       - name: Build with Gradle
         run: ./gradlew build            
