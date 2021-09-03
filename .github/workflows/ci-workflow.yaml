@@ -1,7 +1,7 @@
 name: ci-workflow
 
 on:
-  [push, workflow_dispatch]:
+  [push, workflow_dispatch]
 
 jobs:
 
