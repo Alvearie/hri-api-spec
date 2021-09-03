@@ -7,8 +7,8 @@ info:
     name: Apache 2.0
     url: "https://www.apache.org/licenses/LICENSE-2.0.html"
 paths:
-  '/tenants/%special%^^&&&&--//++==$$///batches':
-    ZZTOP:
+  '/tenants/{tenantId}/batches':
+    post:
       summary: Create Batch
       description: >-
         Data Producer sends a New Batch Registration call into the API. HRI
