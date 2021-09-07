@@ -29,6 +29,21 @@ jobs:
           files: |
             management-api/management.yml
       
+      - name: set Branch env var
+        if: startsWith(github.ref, 'refs/tags/v') == false
+        run: | 
+          BRANCH_NAME=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          echo "ACTIONS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+          echo branch_name=$ACTIONS_BRANCH
+
+      - name: Set Tag env var
+        if: startsWith(github.ref, 'refs/tags/v') == true
+        shell: bash
+        run: | 
+          TAG_ID=${GITHUB_REF##*/}
+          echo "ACTIONS_TAG=$TAG_ID" >> $GITHUB_ENV
+          echo tag_name=$ACTIONS_TAG
+
       - name: Build with Gradle
         run: ./gradlew build
 
