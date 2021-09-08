@@ -8,13 +8,17 @@ plugins {
 group = 'org.alvearie.hri'
 version = '1.2.0'
 
-//TODO update for GitHub actions
-ext.branch = System.getenv('TRAVIS_BRANCH') != null
-        ? System.getenv('TRAVIS_BRANCH')
+ext.branch = System.getenv('ACTIONS_BRANCH') != null
+        ? System.getenv('ACTIONS_BRANCH')
         : grgit.open(currentDir: project.rootDir).branch.current.name
-if ("${branch}" != 'master') {
-    version = "${version}-${branch}-SNAPSHOT"
+if (System.getenv('ACTIONS_TAG') == null || System.getenv('ACTIONS_TAG') == "") {
+    version = "${branch}-SNAPSHOT"
+} else if (System.getenv('ACTIONS_TAG') == "v${version}") {
+    version = "${version}"
+} else {
+    throw new InvalidUserDataException(String.format("The tag '%s' does not match with the current release version '%s'",System.getenv('TRAVIS_TAG'),"${version}"));
 }
+println "api-spec version: ${version}"
 
 repositories {
   mavenLocal()
@@ -184,15 +188,17 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            artifactId = 'hri-api-batch-notification'
         }
     }
 
     repositories {
         maven {
-            url 'TBD'
+            name = "GitHubPackages"
+            url 'https://maven.pkg.github.com/Alvearie/hri-api-spec'
             credentials {
-                username findProperty('user') ?: ''
-                password findProperty('password') ?: ''
+              username = System.getenv("GITHUB_ACTOR")
+              password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
