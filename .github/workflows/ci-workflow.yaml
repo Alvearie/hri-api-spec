@@ -1,0 +1,46 @@
+name: ci-workflow
+
+on:
+  [push, workflow_dispatch]
+
+jobs:
+
+  build:
+    name: Build and Package
+    runs-on: ubuntu-latest 
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up adoptopenjdk8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+          cache: 'gradle'
+      
+      - name: Run openapi Validate
+        uses: mbowman100/swagger-validator-action@master
+        with:
+          files: |
+            management-api/management.yml
+      
+      - name: Set Branch env var
+        if: startsWith(github.ref, 'refs/tags/v') == false
+        run: | 
+          BRANCH_NAME=${GITHUB_REF##*/}
+          echo "ACTIONS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+      - name: Set Tag env var
+        if: startsWith(github.ref, 'refs/tags/v') == true
+        run: | 
+          TAG_ID=${GITHUB_REF##*/}
+          echo "ACTIONS_TAG=$TAG_ID" >> $GITHUB_ENV
+      - name: Build with Gradle
+        run: | 
+          echo branch_name="${{env.ACTIONS_BRANCH}}"
+          echo tag_name="${{env.ACTIONS_TAG}}"
+          ./gradlew build
+      - name: Publish package
+        run: gradle publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
