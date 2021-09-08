@@ -12,10 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run a Start script line
-        run: echo Start api-spec Build
-
       - name: Set up adoptopenjdk8
         uses: actions/setup-java@v2
         with:
@@ -23,13 +19,13 @@ jobs:
           distribution: 'adopt'
           cache: 'gradle'
       
-      - name: run openapi Validate
+      - name: Run openapi Validate
         uses: mbowman100/swagger-validator-action@master
         with:
           files: |
             management-api/management.yml
       
-      - name: set Branch env var
+      - name: Set Branch env var
         if: startsWith(github.ref, 'refs/tags/v') == false
         run: | 
           BRANCH_NAME=${GITHUB_REF##*/}
