@@ -2,7 +2,7 @@
   "id" : "1234",
   "name": "batch-2019-10-07",
   "integratorId": "c857cb05-b7f3-123b-bab9-bfc8151f5522",
-  "topic" : "ingest.1.fhir",
+  "topic" : "ingest.1.fhir.in",
   "dataType" : "claims",
   "invalidThreshold" : 10,
   "status" : "started",
