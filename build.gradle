@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'org.alvearie.hri'
-version = '2.1-2.0.1'
+version = '2.1-2.0.2'
 
 ext.branch = System.getenv('ACTIONS_BRANCH') != null
         ? System.getenv('ACTIONS_BRANCH')
