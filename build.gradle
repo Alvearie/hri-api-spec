@@ -2,7 +2,7 @@ plugins {
   id 'java'
   id 'maven-publish'
   id 'com.github.eirnym.js2p' version '1.0'
-  id 'org.ajoberstar.grgit' version '3.1.1'
+  id 'org.ajoberstar.grgit' version '4.1.0'
 }
 
 group = 'org.alvearie.hri'
@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
   // Required if generating Jackson 2 annotations
-  implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
 }
 
 jsonSchema2Pojo {
