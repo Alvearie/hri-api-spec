@@ -9,6 +9,8 @@ plugins {
 group = 'org.alvearie.hri'
 version = 'Alpha.Dev'
 
+ext.ossPassword = findProperty("SONATYPE_OSS_PASSWORD") ?: System.getenv("SONATYPE_OSS_PASSWORD")
+
 ext.branch = System.getenv('ACTIONS_BRANCH') != null
         ? System.getenv('ACTIONS_BRANCH')
         : grgit.open(currentDir: project.rootDir).branch.current.name
