@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Health Record Ingestion Management API
-  version: 3.1-2.0.2
+  version: 3.2-2.0.3
   description: Alvearie Health Record Ingestion Management API
   license:
     name: Apache 2.0

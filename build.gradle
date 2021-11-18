@@ -2,11 +2,14 @@ plugins {
   id 'java'
   id 'maven-publish'
   id 'com.github.eirnym.js2p' version '1.0'
-  id 'org.ajoberstar.grgit' version '3.1.1'
+  id 'org.ajoberstar.grgit' version '4.1.0'
+  id "org.sonatype.gradle.plugins.scan" version "2.2.1"
 }
 
 group = 'org.alvearie.hri'
-version = '3.1-2.0.2'
+version = '3.2-2.0.3'
+
+ext.ossPassword = findProperty("SONATYPE_OSS_PASSWORD") ?: System.getenv("SONATYPE_OSS_PASSWORD")
 
 ext.branch = System.getenv('ACTIONS_BRANCH') != null
         ? System.getenv('ACTIONS_BRANCH')
@@ -27,7 +30,7 @@ repositories {
 
 dependencies {
   // Required if generating Jackson 2 annotations
-  implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
 }
 
 jsonSchema2Pojo {
@@ -203,3 +206,20 @@ publishing {
         }
     }
 }
+
+ossIndexAudit {
+    username = 'hribld@us.ibm.com'
+    password = "${ossPassword}"
+    allConfigurations = true // if true includes the dependencies in all resolvable configurations. By default is false, meaning only 'compileClasspath', 'runtimeClasspath', 'releaseCompileClasspath' and 'releaseRuntimeClasspath' are considered
+    useCache = true // true by default
+    cacheExpiration = 'PT86400S' // note: time in seconds (24hrs); 12 hours if omitted. It must follow the Joda Time specification at https://www.javadoc.io/doc/joda-time/joda-time/2.10.4/org/joda/time/Duration.html#parse-java.lang.String-
+    colorEnabled = true // if true prints vulnerability description in color. By default is true.
+    printBanner = true // if true will print ASCII text banner. By default is true.
+
+    // Vulnerabilities that can safely be ignored
+    //excludeVulnerabilityIds = [ ]
+
+    // list containing coordinate of components which if vulnerable should be ignored
+    //excludeCoordinates = [ ]
+}
+
